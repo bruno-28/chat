@@ -51,18 +51,25 @@ class App extends React.Component {
   }
 
   render() {
-    const messages = store.getState().messages;
+    const state = store.getState();
+    const activeThreadId = state.activeThreadId;
+    const threads = state.threads;
+    const activeThread = threads.find((t) => t.id === activeThreadId);
+    const tabs = threads.map((t) => ({
+      title: t.title,
+      active: t.id === activeThreadId,
+    }));
 
     return (
       <div className="ui container">
-        <MessageView messages={messages} />
-        <MessageInput />
+        <ThreadTabs tabs={tabs} />
+        <Thread thread={activeThread} />
       </div>
     );
   }
 }
 
-class MessageView extends React.Component {
+class Thread extends React.Component {
   handleClick = (id) => {
     store.dispatch({
       type: "DELETE_MESSAGE",
@@ -71,7 +78,7 @@ class MessageView extends React.Component {
   };
 
   render() {
-    const messages = this.props.messages.map((message, index) => (
+    const messages = this.props.thread.messages.map((message, index) => (
       <div
         className="comment"
         key={index}
@@ -86,6 +93,9 @@ class MessageView extends React.Component {
     return (
       <div className="ui center aligned basic segment">
         <div className="ui comments">{messages}</div>
+        <div>
+          <MessageInput />
+        </div>
       </div>
     );
   }
