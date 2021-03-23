@@ -31,7 +31,7 @@ class App extends React.Component {
     const messages = store.getState().messages;
 
     return (
-      <div className="ui segment">
+      <div className="ui container">
         <MessageView messages={messages} />
         <MessageInput />
       </div>

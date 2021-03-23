@@ -6,7 +6,14 @@ import App from "./App";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <div id="main" className="main ui">
+      <h1 class="ui dividing centered header">Chat App</h1>
+      <div class="ui one column center aligned page grid">
+        <div class="column ten wide">
+          <App />
+        </div>
+      </div>
+    </div>
   </React.StrictMode>,
   document.getElementById("root")
 );
