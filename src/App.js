@@ -9,6 +9,14 @@ function reducer(state, action) {
   };
 }
 
+function activeThreadIdReducer(state, action) {
+  if (action.type === "OPEN_THREAD") {
+    return action.id;
+  } else {
+    return state;
+  }
+}
+
 function threadsReducer(state, action) {
   if (action.type === "ADD_MESSAGE") {
     const newMessage = {
