@@ -17,40 +17,51 @@ function activeThreadIdReducer(state, action) {
   }
 }
 
+function findThreadIndex(threads, action) {
+  switch (action.type) {
+    case "ADD_MESSAGE": {
+      return threads.findIndex((t) => t.id === action.threadId);
+    }
+    case "DELETE_MESSAGE": {
+      return threads.findIndex((t) =>
+        t.messages.find((m) => m.id === action.id)
+      );
+    }
+    // no default
+  }
+}
+
 function threadsReducer(state, action) {
+  switch (action.type) {
+    case "ADD_MESSAGE":
+    case "DELETE_MESSAGE": {
+      const threadIndex = findThreadIndex(state, action);
+      const oldThread = state[threadIndex];
+      const newThread = {
+        ...oldThread,
+        messages: messagesReducer(oldThread.messages, action),
+      };
+
+      return [
+        ...state.slice(0, threadIndex),
+        newThread,
+        ...state.slice(threadIndex + 1, state.length),
+      ];
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
+function messagesReducer(state, action) {
   if (action.type === "ADD_MESSAGE") {
     const newMessage = {
       text: action.text,
       timestamp: Date.now(),
       id: uuid(),
     };
-    const threadIndex = state.findIndex((t) => t.id === action.threadId);
-    const oldThread = state[threadIndex];
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.concat(newMessage),
-    };
-
-    return [
-      ...state.slice(0, threadIndex),
-      newThread,
-      ...state.slice(threadIndex + 1, state.length),
-    ];
-  } else if (action.type === "DELETE_MESSAGE") {
-    const threadIndex = state.findIndex((t) =>
-      t.messages.find((m) => m.id === action.id)
-    );
-    const oldThread = state[threadIndex];
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.filter((m) => m.id !== action.id),
-    };
-
-    return [
-      ...state.slice(0, threadIndex),
-      newThread,
-      ...state.slice(threadIndex + 1, state.length),
-    ];
+    return state.concat(newMessage);
   } else {
     return state;
   }
