@@ -119,7 +119,7 @@ class Thread extends React.Component {
       <div className="ui center aligned basic segment">
         <div className="ui comments">{messages}</div>
         <div>
-          <MessageInput />
+          <MessageInput threadId={this.props.thread.id} />
         </div>
       </div>
     );
@@ -141,6 +141,7 @@ class MessageInput extends React.Component {
     store.dispatch({
       type: "ADD_MESSAGE",
       text: this.state.value,
+      threadId: this.props.threadId,
     });
     this.setState({
       value: "",
