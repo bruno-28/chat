@@ -1,15 +1,13 @@
 import React from "react";
-import { createStore } from "redux";
+import { createStore, combineReducers } from "redux";
 import { v4 as uuid } from "uuid";
 
-function reducer(state, action) {
-  return {
-    activeThreadId: activeThreadIdReducer(state.activeThreadId, action),
-    threads: threadsReducer(state.threads, action),
-  };
-}
+const reducer = combineReducers({
+  activeThreadId: activeThreadIdReducer,
+  threads: threadsReducer,
+});
 
-function activeThreadIdReducer(state, action) {
+function activeThreadIdReducer(state = "1-fca2", action) {
   if (action.type === "OPEN_THREAD") {
     return action.id;
   } else {
@@ -17,7 +15,21 @@ function activeThreadIdReducer(state, action) {
   }
 }
 
-function threadsReducer(state, action) {
+function threadsReducer(
+  state = [
+    {
+      id: "1-fca2",
+      title: "User #1",
+      messages: messagesReducer(undefined, {}),
+    },
+    {
+      id: "2-be91",
+      title: "User #2",
+      messages: messagesReducer(undefined, {}),
+    },
+  ],
+  action
+) {
   switch (action.type) {
     case "ADD_MESSAGE":
     case "DELETE_MESSAGE": {
@@ -54,7 +66,7 @@ function findThreadIndex(threads, action) {
   }
 }
 
-function messagesReducer(state, action) {
+function messagesReducer(state = [], action) {
   switch (action.type) {
     case "ADD_MESSAGE": {
       const newMessage = {
@@ -73,29 +85,7 @@ function messagesReducer(state, action) {
   }
 }
 
-const initialState = {
-  activeThreadId: "1-fca2",
-  threads: [
-    {
-      id: "1-fca2",
-      title: "Buzz Aldrin",
-      messages: [
-        {
-          text: "Twelve minutes to ignition.",
-          timestamp: Date.now(),
-          id: uuid(),
-        },
-      ],
-    },
-    {
-      id: "2-be91",
-      title: "Michael Collins",
-      messages: [],
-    },
-  ],
-};
-
-const store = createStore(reducer, initialState);
+const store = createStore(reducer);
 
 class App extends React.Component {
   componentDidMount() {
