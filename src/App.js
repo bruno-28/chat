@@ -3,6 +3,13 @@ import { createStore } from "redux";
 import { v4 as uuid } from "uuid";
 
 function reducer(state, action) {
+  return {
+    activeThreadId: activeThreadIdReducer(state.activeThreadId, action),
+    threads: threadsReducer(state.threads, action),
+  };
+}
+
+function threadsReducer(state, action) {
   if (action.type === "ADD_MESSAGE") {
     const newMessage = {
       text: action.text,
