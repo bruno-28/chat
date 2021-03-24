@@ -17,20 +17,6 @@ function activeThreadIdReducer(state, action) {
   }
 }
 
-function findThreadIndex(threads, action) {
-  switch (action.type) {
-    case "ADD_MESSAGE": {
-      return threads.findIndex((t) => t.id === action.threadId);
-    }
-    case "DELETE_MESSAGE": {
-      return threads.findIndex((t) =>
-        t.messages.find((m) => m.id === action.id)
-      );
-    }
-    // no default
-  }
-}
-
 function threadsReducer(state, action) {
   switch (action.type) {
     case "ADD_MESSAGE":
@@ -54,16 +40,36 @@ function threadsReducer(state, action) {
   }
 }
 
+function findThreadIndex(threads, action) {
+  switch (action.type) {
+    case "ADD_MESSAGE": {
+      return threads.findIndex((t) => t.id === action.threadId);
+    }
+    case "DELETE_MESSAGE": {
+      return threads.findIndex((t) =>
+        t.messages.find((m) => m.id === action.id)
+      );
+    }
+    // no default
+  }
+}
+
 function messagesReducer(state, action) {
-  if (action.type === "ADD_MESSAGE") {
-    const newMessage = {
-      text: action.text,
-      timestamp: Date.now(),
-      id: uuid(),
-    };
-    return state.concat(newMessage);
-  } else {
-    return state;
+  switch (action.type) {
+    case "ADD_MESSAGE": {
+      const newMessage = {
+        text: action.text,
+        timestamp: Date.now(),
+        id: uuid(),
+      };
+      return state.concat(newMessage);
+    }
+    case "DELETE_MESSAGE": {
+      return state.filter((m) => m.id !== action.id);
+    }
+    default: {
+      return state;
+    }
   }
 }
 
