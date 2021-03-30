@@ -98,6 +98,7 @@ class ThreadTabs extends React.Component {
   componentDidMount() {
     store.subscribe(() => this.forceUpdate());
   }
+
   render() {
     const state = store.getState();
 
