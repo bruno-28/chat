@@ -155,33 +155,32 @@ class ThreadTabs extends React.Component {
 }
 
 class ThreadDisplay extends React.Component {
-  handleClick = (id) => {
-    store.dispatch({
-      type: "DELETE_MESSAGE",
-      id: id,
-    });
-  };
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
 
   render() {
-    const messages = this.props.thread.messages.map((message, index) => (
-      <div
-        className="comment"
-        key={index}
-        onClick={() => this.handleClick(message.id)}
-      >
-        <div className="text">
-          {message.text}
-          <span className="metadata">@{message.timestamp}</span>
-        </div>
-      </div>
-    ));
+    const state = store.getState();
+    const activeThreadId = state.activeThreadId;
+    const activeThread = state.threads.find((t) => t.id === activeThreadId);
+
     return (
-      <div className="ui center aligned basic segment">
-        <div className="ui comments">{messages}</div>
-        <div>
-          <MessageInput threadId={this.props.thread.id} />
-        </div>
-      </div>
+      <Thread
+        thread={activeThread}
+        onMessageClick={(id) =>
+          store.dispatch({
+            type: "DELETE_MESSAGE",
+            id: id,
+          })
+        }
+        onMessageSubmit={(text) =>
+          store.dispatch({
+            type: "ADD_MESSAGE",
+            text: text,
+            threadId: activeThreadId,
+          })
+        }
+      />
     );
   }
 }
