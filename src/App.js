@@ -140,6 +140,19 @@ class ThreadDisplay extends React.Component {
     store.subscribe(() => this.forceUpdate());
   }
 
+  handleMessageClick = (id) =>
+    store.dispatch({
+      type: "DELETE_MESSAGE",
+      id: id,
+    });
+
+  handleMessageSubmit = (text, id) =>
+    store.dispatch({
+      type: "ADD_MESSAGE",
+      text: text,
+      threadId: id,
+    });
+
   render() {
     const state = store.getState();
     const activeThreadId = state.activeThreadId;
@@ -148,18 +161,9 @@ class ThreadDisplay extends React.Component {
     return (
       <Thread
         thread={activeThread}
-        onMessageClick={(id) =>
-          store.dispatch({
-            type: "DELETE_MESSAGE",
-            id: id,
-          })
-        }
+        onMessageClick={(id) => this.handleMessageClick(id)}
         onMessageSubmit={(text) =>
-          store.dispatch({
-            type: "ADD_MESSAGE",
-            text: text,
-            threadId: activeThreadId,
-          })
+          this.handleMessageSubmit(text, activeThreadId)
         }
       />
     );
