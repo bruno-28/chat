@@ -1,6 +1,5 @@
 import React from "react";
 import { createStore, combineReducers } from "redux";
-import { MessageList } from "semantic-ui-react";
 import { v4 as uuid } from "uuid";
 
 const reducer = combineReducers({
@@ -88,42 +87,10 @@ function messagesReducer(state = [], action) {
 
 const store = createStore(reducer);
 
-class App extends React.Component {
-  componentDidMount() {
-    store.subscribe(() => this.forceUpdate());
-  }
-
-  render() {
-    const state = store.getState();
-    const activeThreadId = state.activeThreadId;
-    const threads = state.threads;
-    const activeThread = threads.find((t) => t.id === activeThreadId);
-    const tabs = threads.map((t) => ({
-      title: t.title,
-      active: t.id === activeThreadId,
-      id: t.id,
-    }));
-
-    return (
-      <div className="ui container">
-        <ThreadTabs tabs={tabs} />
-        <Thread thread={activeThread} />
-      </div>
-    );
-  }
-}
-
-const Tabs = (props) => (
-  <div className="ui top attached tabular menu">
-    {props.tabs.map((tab, index) => (
-      <div
-        key={index}
-        className={tab.active ? "active item" : "item"}
-        onClick={() => props.onClick(tab.id)}
-      >
-        {tab.title}
-      </div>
-    ))}
+const App = () => (
+  <div className="ui container">
+    <ThreadTabs />
+    <ThreadDisplay />
   </div>
 );
 
@@ -153,6 +120,20 @@ class ThreadTabs extends React.Component {
     );
   }
 }
+
+const Tabs = (props) => (
+  <div className="ui top attached tabular menu">
+    {props.tabs.map((tab, index) => (
+      <div
+        key={index}
+        className={tab.active ? "active item" : "item"}
+        onClick={() => props.onClick(tab.id)}
+      >
+        {tab.title}
+      </div>
+    ))}
+  </div>
+);
 
 class ThreadDisplay extends React.Component {
   componentDidMount() {
@@ -195,6 +176,19 @@ const Thread = (props) => (
   </div>
 );
 
+const MessageList = (props) => (
+  <div className="ui comments">
+    {props.messages.map((m, index) => (
+      <div className="comment" key={index} onClick={() => props.onClick(m.id)}>
+        <div className="text">
+          {m.text}
+          <span className="metadata">@{m.timestamp}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 class TextFieldSubmit extends React.Component {
   state = {
     value: "",
@@ -228,18 +222,5 @@ class TextFieldSubmit extends React.Component {
     );
   }
 }
-
-const MessageList = (props) => (
-  <div className="ui comments">
-    {props.messages.map((m, index) => (
-      <div className="comment" key={index} onClick={() => props.onClick(m.id)}>
-        <div className="text">
-          {m.text}
-          <span className="metadata">@{m.timestamp}</span>
-        </div>
-      </div>
-    ))}
-  </div>
-);
 
 export default App;
