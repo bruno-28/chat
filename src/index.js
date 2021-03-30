@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import "semantic-ui-css/semantic.min.css";
-import App from "./App";
+import WrappedApp from "./App";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -10,7 +10,7 @@ ReactDOM.render(
       <h1 class="ui dividing centered header">Chat App</h1>
       <div class="ui one column center aligned page grid">
         <div class="column ten wide">
-          <App />
+          <WrappedApp />
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { createStore, combineReducers } from "redux";
+import { Provider } from "react-redux";
 import { v4 as uuid } from "uuid";
 
 const reducer = combineReducers({
@@ -228,4 +229,10 @@ class TextFieldSubmit extends React.Component {
   }
 }
 
-export default App;
+const WrappedApp = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+export default WrappedApp;
