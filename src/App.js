@@ -1,5 +1,6 @@
 import React from "react";
 import { createStore, combineReducers } from "redux";
+import { MessageList } from "semantic-ui-react";
 import { v4 as uuid } from "uuid";
 
 const reducer = combineReducers({
@@ -184,6 +185,16 @@ class ThreadDisplay extends React.Component {
     );
   }
 }
+
+const Thread = (props) => (
+  <div className="ui centered aligned basic segment">
+    <MessageList
+      messages={props.thread.messages}
+      onClick={props.onMessageClick}
+    />
+    <TextFieldSubmit onSubmit={props.onMessageSubmit} />
+  </div>
+);
 
 class TextFieldSubmit extends React.Component {
   state = {
