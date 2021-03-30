@@ -1,163 +1,200 @@
 import React from "react";
-import { createStore } from "redux";
+import { createStore, combineReducers } from "redux";
 import { v4 as uuid } from "uuid";
 
-function reducer(state, action) {
-  if (action.type === "ADD_MESSAGE") {
-    const newMessage = {
-      text: action.text,
-      timestamp: Date.now(),
-      id: uuid(),
-    };
-    const threadIndex = state.threads.findIndex(
-      (t) => t.id === action.threadId
-    );
-    const oldThread = state.threads[threadIndex];
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.concat(newMessage),
-    };
+const reducer = combineReducers({
+  activeThreadId: activeThreadIdReducer,
+  threads: threadsReducer,
+});
 
-    return {
-      ...state,
-      threads: [
-        ...state.threads.slice(0, threadIndex),
-        newThread,
-        ...state.threads.slice(threadIndex + 1, state.threads.length),
-      ],
-    };
-  } else if (action.type === "DELETE_MESSAGE") {
-    const threadIndex = state.threads.findIndex((t) =>
-      t.messages.find((m) => m.id === action.id)
-    );
-    const oldThread = state.threads[threadIndex];
-    const newThread = {
-      ...oldThread,
-      messages: oldThread.messages.filter((m) => m.id !== action.id),
-    };
-
-    return {
-      ...state,
-      threads: [
-        ...state.threads.slice(0, threadIndex),
-        newThread,
-        ...state.threads.slice(threadIndex + 1, state.threads.length),
-      ],
-    };
-  } else if (action.type === "OPEN_THREAD") {
-    return {
-      ...state,
-      activeThreadId: action.id,
-    };
+function activeThreadIdReducer(state = "1-fca2", action) {
+  if (action.type === "OPEN_THREAD") {
+    return action.id;
   } else {
     return state;
   }
 }
 
-const initialState = {
-  activeThreadId: "1-fca2",
-  threads: [
+function threadsReducer(
+  state = [
     {
       id: "1-fca2",
-      title: "Buzz Aldrin",
-      messages: [
-        {
-          text: "Twelve minutes to ignition.",
-          timestamp: Date.now(),
-          id: uuid(),
-        },
-      ],
+      title: "User #1",
+      messages: messagesReducer(undefined, {}),
     },
     {
       id: "2-be91",
-      title: "Michael Collins",
-      messages: [],
+      title: "User #2",
+      messages: messagesReducer(undefined, {}),
     },
   ],
-};
+  action
+) {
+  switch (action.type) {
+    case "ADD_MESSAGE":
+    case "DELETE_MESSAGE": {
+      const threadIndex = findThreadIndex(state, action);
+      const oldThread = state[threadIndex];
+      const newThread = {
+        ...oldThread,
+        messages: messagesReducer(oldThread.messages, action),
+      };
 
-const store = createStore(reducer, initialState);
+      return [
+        ...state.slice(0, threadIndex),
+        newThread,
+        ...state.slice(threadIndex + 1, state.length),
+      ];
+    }
+    default: {
+      return state;
+    }
+  }
+}
 
-class App extends React.Component {
+function findThreadIndex(threads, action) {
+  switch (action.type) {
+    case "ADD_MESSAGE": {
+      return threads.findIndex((t) => t.id === action.threadId);
+    }
+    case "DELETE_MESSAGE": {
+      return threads.findIndex((t) =>
+        t.messages.find((m) => m.id === action.id)
+      );
+    }
+    // no default
+  }
+}
+
+function messagesReducer(state = [], action) {
+  switch (action.type) {
+    case "ADD_MESSAGE": {
+      const newMessage = {
+        text: action.text,
+        timestamp: Date.now(),
+        id: uuid(),
+      };
+      return state.concat(newMessage);
+    }
+    case "DELETE_MESSAGE": {
+      return state.filter((m) => m.id !== action.id);
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
+const store = createStore(reducer);
+
+const App = () => (
+  <div className="ui container">
+    <ThreadTabs />
+    <ThreadDisplay />
+  </div>
+);
+
+class ThreadTabs extends React.Component {
   componentDidMount() {
     store.subscribe(() => this.forceUpdate());
   }
 
   render() {
     const state = store.getState();
-    const activeThreadId = state.activeThreadId;
-    const threads = state.threads;
-    const activeThread = threads.find((t) => t.id === activeThreadId);
-    const tabs = threads.map((t) => ({
+
+    const tabs = state.threads.map((t) => ({
       title: t.title,
-      active: t.id === activeThreadId,
+      active: t.id === state.activeThreadId,
       id: t.id,
     }));
 
     return (
-      <div className="ui container">
-        <ThreadTabs tabs={tabs} />
-        <Thread thread={activeThread} />
-      </div>
+      <Tabs
+        tabs={tabs}
+        onClick={(id) =>
+          store.dispatch({
+            type: "OPEN_THREAD",
+            id: id,
+          })
+        }
+      />
     );
   }
 }
 
-class ThreadTabs extends React.Component {
-  handleClick = (id) => {
-    store.dispatch({
-      type: "OPEN_THREAD",
-      id: id,
-    });
-  };
-
-  render() {
-    const tabs = this.props.tabs.map((tab, index) => (
+const Tabs = (props) => (
+  <div className="ui top attached tabular menu">
+    {props.tabs.map((tab, index) => (
       <div
         key={index}
         className={tab.active ? "active item" : "item"}
-        onClick={() => this.handleClick(tab.id)}
+        onClick={() => props.onClick(tab.id)}
       >
         {tab.title}
       </div>
-    ));
-    return <div className="ui top attached tabular menu">{tabs}</div>;
-  }
-}
+    ))}
+  </div>
+);
 
-class Thread extends React.Component {
-  handleClick = (id) => {
+class ThreadDisplay extends React.Component {
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
+
+  handleMessageClick = (id) =>
     store.dispatch({
       type: "DELETE_MESSAGE",
       id: id,
     });
-  };
+
+  handleMessageSubmit = (text, id) =>
+    store.dispatch({
+      type: "ADD_MESSAGE",
+      text: text,
+      threadId: id,
+    });
 
   render() {
-    const messages = this.props.thread.messages.map((message, index) => (
-      <div
-        className="comment"
-        key={index}
-        onClick={() => this.handleClick(message.id)}
-      >
-        <div className="text">
-          {message.text}
-          <span className="metadata">@{message.timestamp}</span>
-        </div>
-      </div>
-    ));
+    const state = store.getState();
+    const activeThreadId = state.activeThreadId;
+    const activeThread = state.threads.find((t) => t.id === activeThreadId);
+
     return (
-      <div className="ui center aligned basic segment">
-        <div className="ui comments">{messages}</div>
-        <div>
-          <MessageInput threadId={this.props.thread.id} />
-        </div>
-      </div>
+      <Thread
+        thread={activeThread}
+        onMessageClick={(id) => this.handleMessageClick(id)}
+        onMessageSubmit={(text) =>
+          this.handleMessageSubmit(text, activeThreadId)
+        }
+      />
     );
   }
 }
 
-class MessageInput extends React.Component {
+const Thread = (props) => (
+  <div className="ui centered aligned basic segment">
+    <MessageList
+      messages={props.thread.messages}
+      onClick={props.onMessageClick}
+    />
+    <TextFieldSubmit onSubmit={props.onMessageSubmit} />
+  </div>
+);
+
+const MessageList = (props) => (
+  <div className="ui comments">
+    {props.messages.map((m, index) => (
+      <div className="comment" key={index} onClick={() => props.onClick(m.id)}>
+        <div className="text">
+          {m.text}
+          <span className="metadata">@{m.timestamp}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+class TextFieldSubmit extends React.Component {
   state = {
     value: "",
   };
@@ -169,11 +206,7 @@ class MessageInput extends React.Component {
   };
 
   handleSubmit = () => {
-    store.dispatch({
-      type: "ADD_MESSAGE",
-      text: this.state.value,
-      threadId: this.props.threadId,
-    });
+    this.props.onSubmit(this.state.value);
     this.setState({
       value: "",
     });
