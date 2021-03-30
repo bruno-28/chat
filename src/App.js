@@ -153,7 +153,7 @@ class ThreadTabs extends React.Component {
   }
 }
 
-class Thread extends React.Component {
+class ThreadDisplay extends React.Component {
   handleClick = (id) => {
     store.dispatch({
       type: "DELETE_MESSAGE",
@@ -185,7 +185,7 @@ class Thread extends React.Component {
   }
 }
 
-class MessageInput extends React.Component {
+class TextFieldSubmit extends React.Component {
   state = {
     value: "",
   };
@@ -197,11 +197,7 @@ class MessageInput extends React.Component {
   };
 
   handleSubmit = () => {
-    store.dispatch({
-      type: "ADD_MESSAGE",
-      text: this.state.value,
-      threadId: this.props.threadId,
-    });
+    this.props.onSubmit(this.state.value);
     this.setState({
       value: "",
     });
@@ -222,5 +218,18 @@ class MessageInput extends React.Component {
     );
   }
 }
+
+const MessageList = (props) => (
+  <div className="ui comments">
+    {props.messages.map((m, index) => (
+      <div className="comment" key={index} onClick={() => props.onClick(m.id)}>
+        <div className="text">
+          {m.text}
+          <span className="metadata">@{m.timestamp}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default App;
