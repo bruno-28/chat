@@ -1,6 +1,6 @@
 import React from "react";
 import { createStore, combineReducers } from "redux";
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
 import { v4 as uuid } from "uuid";
 
 const reducer = combineReducers({
@@ -94,6 +94,26 @@ const App = () => (
     <ThreadDisplay />
   </div>
 );
+
+const mapStateToTabsProps = (state) => {
+  const tabs = state.threads.map((t) => ({
+    title: t.title,
+    active: t.id === state.activeThreadId,
+    id: t.id,
+  }));
+
+  return {
+    tabs,
+  };
+};
+
+const mapDispatchToTabsProps = (dispatch) => ({
+  onClick: (id) =>
+    dispatch({
+      type: "OPEN_THREAD",
+      id: id,
+    }),
+});
 
 class ThreadTabs extends React.Component {
   componentDidMount() {
