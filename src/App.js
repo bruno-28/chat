@@ -131,40 +131,29 @@ const Tabs = (props) => (
 
 const ThreadTabs = connect(mapStateToTabsProps, mapDispatchToTabsProps)(Tabs);
 
-class ThreadDisplay extends React.Component {
-  componentDidMount() {
-    store.subscribe(() => this.forceUpdate());
-  }
+const mapStateToThreadProps = (state) => ({
+  thread: state.threads.find((t) => t.id === state.activeThreadId),
+});
 
-  handleMessageClick = (id) =>
-    store.dispatch({
+const mapDispatchToThreadProps = (dispatch) => ({
+  onMessageClick: (id) =>
+    dispatch({
       type: "DELETE_MESSAGE",
       id: id,
-    });
+    }),
+  dispatch: dispatch,
+});
 
-  handleMessageSubmit = (text, id) =>
-    store.dispatch({
+const mergeThreadProps = (stateProps, dispatchProps) => ({
+  ...stateProps,
+  ...dispatchProps,
+  onMessageSubmit: (text) =>
+    dispatchProps.dispatch({
       type: "ADD_MESSAGE",
       text: text,
-      threadId: id,
-    });
-
-  render() {
-    const state = store.getState();
-    const activeThreadId = state.activeThreadId;
-    const activeThread = state.threads.find((t) => t.id === activeThreadId);
-
-    return (
-      <Thread
-        thread={activeThread}
-        onMessageClick={(id) => this.handleMessageClick(id)}
-        onMessageSubmit={(text) =>
-          this.handleMessageSubmit(text, activeThreadId)
-        }
-      />
-    );
-  }
-}
+      threadId: stateProps.thread.id,
+    }),
+});
 
 const Thread = (props) => (
   <div className="ui centered aligned basic segment">
@@ -175,6 +164,12 @@ const Thread = (props) => (
     <TextFieldSubmit onSubmit={props.onMessageSubmit} />
   </div>
 );
+
+const ThreadDisplay = connect(
+  mapStateToThreadProps,
+  mapDispatchToThreadProps,
+  mergeThreadProps
+)(Thread);
 
 const MessageList = (props) => (
   <div className="ui comments">
