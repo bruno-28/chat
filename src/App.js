@@ -115,34 +115,6 @@ const mapDispatchToTabsProps = (dispatch) => ({
     }),
 });
 
-class ThreadTabs extends React.Component {
-  componentDidMount() {
-    store.subscribe(() => this.forceUpdate());
-  }
-
-  render() {
-    const state = store.getState();
-
-    const tabs = state.threads.map((t) => ({
-      title: t.title,
-      active: t.id === state.activeThreadId,
-      id: t.id,
-    }));
-
-    return (
-      <Tabs
-        tabs={tabs}
-        onClick={(id) =>
-          store.dispatch({
-            type: "OPEN_THREAD",
-            id: id,
-          })
-        }
-      />
-    );
-  }
-}
-
 const Tabs = (props) => (
   <div className="ui top attached tabular menu">
     {props.tabs.map((tab, index) => (
@@ -156,6 +128,8 @@ const Tabs = (props) => (
     ))}
   </div>
 );
+
+const ThreadTabs = connect(mapStateToTabsProps, mapDispatchToTabsProps)(Tabs);
 
 class ThreadDisplay extends React.Component {
   componentDidMount() {
